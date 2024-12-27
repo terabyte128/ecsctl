@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )
 
@@ -42,18 +44,15 @@ func buildSsmRequestParams(rsp *ecs.ExecuteCommandOutput) string {
 		log.Fatalf("no tasks with ID %s", taskID)
 	}
 
-	var containerRuntimeID *string
+	containerRuntimeID, ok := lo.Find(taskRsp.Tasks[0].Containers, func(val types.Container) bool {
+		return *val.Name == containerName
+	})
 
-	for _, container := range taskRsp.Tasks[0].Containers {
-		if *container.Name == containerName {
-			containerRuntimeID = container.RuntimeId
-		}
-	}
-	if containerRuntimeID == nil {
+	if !ok {
 		log.Fatalf("no containers with name %s", containerName)
 	}
 
-	target := fmt.Sprintf("ecs:%s_%s_%s", clusterName, taskID, *containerRuntimeID)
+	target := fmt.Sprintf("ecs:%s_%s_%s", clusterName, taskID, *containerRuntimeID.RuntimeId)
 	params := SsmRequestParams{
 		Target: target,
 	}
@@ -135,13 +134,11 @@ func init() {
 			fmt.Printf("failed to list tasks %v", err)
 		}
 
-		var taskIDs []string
-
-		for _, task := range tasks.TaskArns {
+		taskIDs := lo.Map(tasks.TaskArns, func(task string, _ int) string {
 			splitArn := strings.Split(task, "/")
 			id := splitArn[len(splitArn)-1]
-			taskIDs = append(taskIDs, id)
-		}
+			return id
+		})
 
 		return taskIDs, cobra.ShellCompDirectiveNoFileComp
 	})

@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/olekukonko/tablewriter"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )
 
@@ -19,12 +20,10 @@ func completeClusters(cmd *cobra.Command, args []string, toComplete string) ([]s
 		log.Fatalf("failed to list clusters: %v", err)
 	}
 
-	var clusterNames []string
-
-	for _, arn := range clusters.ClusterArns {
-		splat := strings.Split(arn, "/")
-		clusterNames = append(clusterNames, splat[len(splat)-1])
-	}
+	clusterNames := lo.Map(clusters.ClusterArns, func(val string, _ int) string {
+		splat := strings.Split(val, "/")
+		return splat[len(splat)-1]
+	})
 
 	return clusterNames, cobra.ShellCompDirectiveNoFileComp
 }

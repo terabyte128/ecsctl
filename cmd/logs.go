@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
+	ecstypes "github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )
 
@@ -32,11 +34,9 @@ var logsCmd = &cobra.Command{
 			log.Fatalf("failed to describe services: %v", err)
 		}
 
-		var serviceNames []string
-
-		for _, svc := range serviceDescs.Services {
-			serviceNames = append(serviceNames, *svc.ServiceName)
-		}
+		serviceNames := lo.Map(serviceDescs.Services, func(svc ecstypes.Service, _ int) string {
+			return *svc.ServiceName
+		})
 
 		return serviceNames, cobra.ShellCompDirectiveNoFileComp
 	},
@@ -124,8 +124,6 @@ var logsCmd = &cobra.Command{
 				}
 			}
 		}
-
-		fmt.Println(tail)
 	},
 }
 
