@@ -11,4 +11,5 @@ func init() {
 	getCmd.AddCommand(getServicesCmd)
 	getCmd.AddCommand(getClustersCmd)
 	getCmd.AddCommand(getTasksCmd)
+	getCmd.AddCommand(getTaskDefinitions)
 }

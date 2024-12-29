@@ -41,6 +41,7 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(logsCmd)
 	rootCmd.AddCommand(execCmd)
+	rootCmd.AddCommand(editCmd)
 }
 
 func Execute() {

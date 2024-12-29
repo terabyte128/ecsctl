@@ -69,14 +69,18 @@ var execCmd = &cobra.Command{
 	Use:   "exec command",
 	Short: "Execute an interactive command on an ECS container",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			log.Fatal("You must specify a command to run")
+		toRun := "bash"
+
+		if len(args) == 1 {
+			toRun = args[0]
+		} else {
+			log.Printf("command not specified, assuming `bash`")
 		}
 
 		input := ecs.ExecuteCommandInput{
 			Task:        &taskID,
 			Cluster:     &cluster,
-			Command:     &args[0],
+			Command:     &toRun,
 			Interactive: true,
 		}
 
